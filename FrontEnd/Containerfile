@@ -19,7 +19,7 @@ RUN groupadd -g 101 nginx && \
     useradd -u 1001 -g nginx -s /sbin/nologin -M nginx
 
 RUN mkdir /etc/certs \
-  && openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/certs/privkey.pem -out /etc/certs/cert.pem
+  && openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:4096 -keyout /etc/certs/privkey.pem -out /etc/certs/cert.pem -subj '/C=EU/ST=DE/L=example/O=graphql/CN=localhost'
 
 # Copy application files
 COPY app/ /var/www/
