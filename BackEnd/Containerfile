@@ -51,7 +51,7 @@ RUN bundle init \
 #    field :completed, Boolean, null: false
 #  end
 #end
-  && bundle exec rails generate graphql:object TodoType title:String completed:Int \
+  && bundle exec rails generate graphql:object TodoType title:String completed:Boolean \
   # app/graphql/types/query_type.rb
 #module Types
 #  class QueryType < Types::BaseObject
@@ -112,9 +112,9 @@ RUN bundle init \
 #  end
 #end
   && bundle exec rails generate graphql:mutation Todo \
-  && bundle exec rails generate graphql:mutation_create Todo \
-  && bundle exec rails generate graphql:mutation_update Todo \
-  && bundle exec rails generate graphql:mutation_delete Todo \
+  #&& bundle exec rails generate graphql:mutation_create Todo \
+  #&& bundle exec rails generate graphql:mutation_update Todo \
+  #&& bundle exec rails generate graphql:mutation_delete Todo \
   && echo -ne "class TodoSchema < GraphQL::Schema\n  query(Types::QueryType)\n  mutation(Types::MutationType)\nend\n" > app/graphql/schema.rb \
   && echo -ne "class GraphqlController < ApplicationController\n  def execute\n    result = TodoSchema.execute(\n      params[:query],\n      variables: ensure_hash(params[:variables]),\n      context: {},\n      operation_name: params[:operationName]\n    )\n    render json: result\n  end\nend\n" >> app/controllers/graphql_controller.rb \
   && sed -i 's/# root/mount GraphiQL::Rails::Engine, at: "\/graphiql", graphql_path: "\/graphql"\n  # root/g' config/routes.rb
