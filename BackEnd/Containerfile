@@ -19,19 +19,6 @@ ARG HOME="/home/$USER"
 WORKDIR $HOME
 USER $USER
 
-# install Ruby, Node.js, Yarn
-ENV NODE_VERSION=22.19.0
-RUN git clone https://github.com/nvm-sh/nvm.git --depth 1 ~/.nvm \
-  && cd .nvm \
-  && . $HOME/.nvm/nvm.sh \
-  && nvm --version \
-  && nvm install $NODE_VERSION \
-  && npm --version \
-  && npm install --global yarn \
-  && which yarn \
-  && yarn --version
-ENV PATH="$HOME/.nvm/versions/node/v$NODE_VERSION/bin/:$PATH"
-
 # install Ruby using rbenv
 ENV PATH="$HOME/.rbenv/bin:$PATH"
 RUN git clone https://github.com/rbenv/rbenv.git --depth 1 ~/.rbenv \
