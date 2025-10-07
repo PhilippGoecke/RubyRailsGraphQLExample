@@ -45,6 +45,8 @@ ENV PATH="$HOME/.rbenv/shims:$PATH"
 
 WORKDIR /rails/demo
 
+ENV RAILS_ENV=production
+
 # install Rails and initialize a new Rails app
 RUN bundle init \
   && bundle add rails --version "~> 8.0.3" \
@@ -152,8 +154,6 @@ ENV PATH="$HOME/.rbenv/shims:$PATH"
 COPY --from=install /rails/demo /rails/demo
 
 WORKDIR /rails/demo
-
-ENV RAILS_ENV=production
 
 EXPOSE 3000
 
