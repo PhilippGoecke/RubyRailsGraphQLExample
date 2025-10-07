@@ -28,7 +28,7 @@ COPY app/ /var/www/
 
 # Change ownership of Nginx directories
 RUN mkdir -p /var/run/nginx \
-   && chown -R nginx:nginx /var/www /var/log/nginx /etc/certs /var/lib/nginx /var/run/nginx
+   && chown -R nginx:nginx /var/www /var/log/nginx /etc/certs /var/lib/nginx /var/run/nginx /run/nginx.pid
 
 # Expose ports
 EXPOSE 80 443
