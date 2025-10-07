@@ -24,7 +24,7 @@ RUN mkdir /etc/certs \
   && openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:4096 -keyout /etc/certs/privkey.pem -out /etc/certs/cert.pem -subj '/C=EU/ST=DE/L=example/O=graphql/CN=localhost'
 
 # Copy application files
-COPY app/ /var/www/
+COPY app/ /var/www/html/
 
 # Change ownership of Nginx directories
 RUN mkdir -p /var/run/nginx \
