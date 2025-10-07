@@ -1,0 +1,166 @@
+FROM debian:trixie-slim as install
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+#SHELL ["/bin/bash", "-c"]
+RUN rm /bin/sh \
+  && ln -s /bin/bash /bin/sh
+
+# install dependencies
+RUN apt update && apt upgrade -y \
+  && apt install -y --no-install-recommends --no-install-suggests ca-certificates git curl libyaml-dev build-essential libssl-dev zlib1g-dev \
+  && rm -rf "/var/lib/apt/lists/*" \
+  && rm -rf /var/cache/apt/archives
+
+# add user and set home directory
+ARG USER=rails
+RUN useradd --create-home --shell /bin/bash $USER
+ARG HOME="/home/$USER"
+WORKDIR $HOME
+USER $USER
+
+# install Ruby, Node.js, Yarn
+ENV NODE_VERSION=22.19.0
+RUN git clone https://github.com/nvm-sh/nvm.git --depth 1 ~/.nvm \
+  && cd .nvm \
+  && . $HOME/.nvm/nvm.sh \
+  && nvm --version \
+  && nvm install $NODE_VERSION \
+  && npm --version \
+  && npm install --global yarn \
+  && which yarn \
+  && yarn --version
+ENV PATH="$HOME/.nvm/versions/node/v$NODE_VERSION/bin/:$PATH"
+
+# install Ruby using rbenv
+ENV PATH="$HOME/.rbenv/bin:$PATH"
+RUN git clone https://github.com/rbenv/rbenv.git --depth 1 ~/.rbenv \
+  && ~/.rbenv/bin/rbenv init \
+  && rbenv --version \
+  && mkdir "$(rbenv root)"/plugins/ \
+  && git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build \
+  && rbenv install 3.4.6 \
+  && rbenv global 3.4.6
+ENV PATH="$HOME/.rbenv/shims:$PATH"
+
+WORKDIR /rails/demo
+
+# install Rails and initialize a new Rails app
+RUN bundle init \
+  && bundle add rails --version "~> 8.0.3" \
+  && bundle exec rails new . --force --skip-git --api --database=sqlite3 \
+  # https://graphql-ruby.org/getting_started.html
+  && bundle add graphql graphiql-rails \
+  && bundle exec rails generate graphql:install \
+  && bundle exec rails generate model Todo title:string completed:boolean \
+  && RAILS_ENV=production bundle exec rails db:migrate \
+  # app/graphql/types/todo_type.rb
+#module Types
+#  class TodoType < Types::BaseObject
+#    field :id, ID, null: false
+#    field :title, String, null: false
+#    field :completed, Boolean, null: false
+#  end
+#end
+  && bundle exec rails generate graphql:object TodoType title:String completed:Int \
+  # app/graphql/types/query_type.rb
+#module Types
+#  class QueryType < Types::BaseObject
+#    # Alle TODOS
+#    field :todos, [Types::TodoType], null: false
+#
+#    def todos
+#      Todo.all
+#    end
+#
+#    # Einzelnes TODO
+#    field :todo, Types::TodoType, null: true do
+#      argument :id, ID, required: true
+#    end
+#
+#    def todo(id:)
+#      Todo.find_by(id: id)
+#    end
+#  end
+#end
+  && echo "module Types\n  class QueryType < Types::BaseObject\n    # Alle TODOS\n    field :todos, [Types::TodoType], null: false\n\n    def todos\n      Todo.all\n    end\n\n    # Einzelnes TODO\n    field :todo, Types::TodoType, null: true do\n      argument :id, ID, required: true\n    end\n\n    def todo(id:)\n      Todo.find_by(id: id)\n    end\n  end\nend\n" >> app/graphql/types/query_type.rb \
+  # app/graphql/types/mutation_type.rb
+#module Types
+#  class MutationType < Types::BaseObject
+#
+#    # TODO anlegen
+#    field :create_todo, Types::TodoType, null: false do
+#      argument :title, String, required: true
+#    end
+#
+#    def create_todo(title:)
+#      Todo.create!(title: title, completed: false)
+#    end
+#
+#    # TODO aktualisieren
+#    field :update_todo, Types::TodoType, null: false do
+#      argument :id, ID, required: true
+#      argument :title, String, required: false
+#      argument :completed, Boolean, required: false
+#    end
+#
+#    def update_todo(id:, title: nil, completed: nil)
+#      todo = Todo.find(id)
+#      todo.update!(title: title, completed: completed)
+#      todo
+#    end
+#
+#    # TODO löschen
+#    field :delete_todo, Boolean, null: false do
+#      argument :id, ID, required: true
+#    end
+#
+#    def delete_todo(id:)
+#      todo = Todo.find(id)
+#      todo.destroy
+#      true
+#    end
+#  end
+#end
+  && bundle exec rails generate graphql:mutation Todo \
+  && bundle exec rails generate graphql:mutation_create Todo \
+  && bundle exec rails generate graphql:mutation_update Todo \
+  && bundle exec rails generate graphql:mutation_delete Todo \
+  && echo "class TodoSchema < GraphQL::Schema\n  query(Types::QueryType)\n  mutation(Types::MutationType)\nend\n" > app/graphql/schema.rb \
+  && echo "class GraphqlController < ApplicationController\n  def execute\n    result = TodoSchema.execute(\n      params[:query],\n      variables: ensure_hash(params[:variables]),\n      context: {},\n      operation_name: params[:operationName]\n    )\n    render json: result\n  end\nend\n" >> app/controller/graphql_controller.rb \
+  && sed -i 's/# root/mount GraphiQL::Rails::Engine, at: "\/graphiql", graphql_path: "\/graphql"\n  # root/g' config/routes.rb \
+  #&& bundle add sprocket-rails \
+  && sed -i '1s/^/#require "sprockets\/railtie"\n/' config/application.rb \
+  && mkdir -p app/assets/config \
+  && echo "//= link graphiql/rails/application.css\n//= link graphiql/rails/application.js" >> app/assets/config/manifest.js
+
+# new stage for Rails app
+FROM debian:trixie-slim as rails
+
+# install dependencies
+RUN apt update && apt upgrade -y \
+  && apt install -y --no-install-recommends --no-install-suggests libyaml-dev libssl-dev \
+  && rm -rf "/var/lib/apt/lists/*" \
+  && rm -rf /var/cache/apt/archives
+
+# add user and set home directory
+ARG USER=rails
+RUN useradd --create-home --shell /bin/bash $USER
+ARG HOME="/home/$USER"
+WORKDIR $HOME
+USER $USER
+
+# copy rbenv, Ruby and Rails App from install stage
+COPY --from=install $HOME/.rbenv $HOME/.rbenv
+ENV PATH="$HOME/.rbenv/shims:$PATH"
+COPY --from=install /rails/demo /rails/demo
+
+WORKDIR /rails/demo
+
+ENV RAILS_ENV=production
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=35s --timeout=4s CMD curl -f http://localhost:3000/up || exit 1
+
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]
