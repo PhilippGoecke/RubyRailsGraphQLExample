@@ -25,7 +25,7 @@ RUN mkdir /etc/certs \
 COPY app/ /var/www/
 
 # Change ownership of Nginx directories
-RUN chown -R nginx:nginx /var/www /var/log/nginx /var/cache/nginx /etc/certs
+RUN chown -R nginx:nginx /var/www /var/log/nginx /etc/certs
 
 # Expose ports
 EXPOSE 80 443
