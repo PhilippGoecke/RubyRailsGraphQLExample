@@ -128,11 +128,7 @@ RUN bundle init \
   && bundle exec rails generate graphql:mutation_delete Todo \
   && echo "class TodoSchema < GraphQL::Schema\n  query(Types::QueryType)\n  mutation(Types::MutationType)\nend\n" > app/graphql/schema.rb \
   && echo "class GraphqlController < ApplicationController\n  def execute\n    result = TodoSchema.execute(\n      params[:query],\n      variables: ensure_hash(params[:variables]),\n      context: {},\n      operation_name: params[:operationName]\n    )\n    render json: result\n  end\nend\n" >> app/controller/graphql_controller.rb \
-  && sed -i 's/# root/mount GraphiQL::Rails::Engine, at: "\/graphiql", graphql_path: "\/graphql"\n  # root/g' config/routes.rb \
-  #&& bundle add sprocket-rails \
-  && sed -i '1s/^/#require "sprockets\/railtie"\n/' config/application.rb \
-  && mkdir -p app/assets/config \
-  && echo "//= link graphiql/rails/application.css\n//= link graphiql/rails/application.js" >> app/assets/config/manifest.js
+  && sed -i 's/# root/mount GraphiQL::Rails::Engine, at: "\/graphiql", graphql_path: "\/graphql"\n  # root/g' config/routes.rb
 
 # new stage for Rails app
 FROM debian:trixie-slim as rails
