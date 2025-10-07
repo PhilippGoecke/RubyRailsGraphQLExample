@@ -4,9 +4,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
 RUN apt update && apt upgrade -y \
-  && apt install -y --no-install-recommends --no-install-suggests gnupg2 ca-certificates curl nginx openssl \
-  && rm -rf "/var/lib/apt/lists/*" \
-  && rm -rf /var/cache/apt/archives
+  && apt install -y --no-install-recommends --no-install-suggests gnupg2 ca-certificates curl nginx openssl libcap2-bin \
+  && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
+
+# Allow non-root nginx to bind to privileged ports (80/443)
+RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
 
 # Check Nginx version
 RUN nginx -v
@@ -25,7 +27,8 @@ RUN mkdir /etc/certs \
 COPY app/ /var/www/
 
 # Change ownership of Nginx directories
-RUN chown -R nginx:nginx /var/www /var/log/nginx /etc/certs /var/lib/nginx
+RUN mkdir -p /var/run/nginx \
+   && chown -R nginx:nginx /var/www /var/log/nginx /etc/certs /var/lib/nginx /var/run/nginx
 
 # Expose ports
 EXPOSE 80 443
