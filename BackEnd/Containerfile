@@ -72,7 +72,7 @@ RUN bundle init \
 #    end
 #  end
 #end
-  && echo "module Types\n  class QueryType < Types::BaseObject\n    # Alle TODOS\n    field :todos, [Types::TodoType], null: false\n\n    def todos\n      Todo.all\n    end\n\n    # Einzelnes TODO\n    field :todo, Types::TodoType, null: true do\n      argument :id, ID, required: true\n    end\n\n    def todo(id:)\n      Todo.find_by(id: id)\n    end\n  end\nend\n" >> app/graphql/types/query_type.rb \
+  && echo -ne "module Types\n  class QueryType < Types::BaseObject\n    # Alle TODOS\n    field :todos, [Types::TodoType], null: false\n\n    def todos\n      Todo.all\n    end\n\n    # Einzelnes TODO\n    field :todo, Types::TodoType, null: true do\n      argument :id, ID, required: true\n    end\n\n    def todo(id:)\n      Todo.find_by(id: id)\n    end\n  end\nend\n" >> app/graphql/types/query_type.rb \
   # app/graphql/types/mutation_type.rb
 #module Types
 #  class MutationType < Types::BaseObject
@@ -115,8 +115,8 @@ RUN bundle init \
   && bundle exec rails generate graphql:mutation_create Todo \
   && bundle exec rails generate graphql:mutation_update Todo \
   && bundle exec rails generate graphql:mutation_delete Todo \
-  && echo "class TodoSchema < GraphQL::Schema\n  query(Types::QueryType)\n  mutation(Types::MutationType)\nend\n" > app/graphql/schema.rb \
-  && echo "class GraphqlController < ApplicationController\n  def execute\n    result = TodoSchema.execute(\n      params[:query],\n      variables: ensure_hash(params[:variables]),\n      context: {},\n      operation_name: params[:operationName]\n    )\n    render json: result\n  end\nend\n" >> app/controllers/graphql_controller.rb \
+  && echo -ne "class TodoSchema < GraphQL::Schema\n  query(Types::QueryType)\n  mutation(Types::MutationType)\nend\n" > app/graphql/schema.rb \
+  && echo -ne "class GraphqlController < ApplicationController\n  def execute\n    result = TodoSchema.execute(\n      params[:query],\n      variables: ensure_hash(params[:variables]),\n      context: {},\n      operation_name: params[:operationName]\n    )\n    render json: result\n  end\nend\n" >> app/controllers/graphql_controller.rb \
   && sed -i 's/# root/mount GraphiQL::Rails::Engine, at: "\/graphiql", graphql_path: "\/graphql"\n  # root/g' config/routes.rb
 
 # new stage for Rails app
