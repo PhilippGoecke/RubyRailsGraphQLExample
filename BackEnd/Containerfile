@@ -74,46 +74,8 @@ RUN bundle init \
 #  end
 #end
   && echo -ne "module Types\n  class QueryType < Types::BaseObject\n    # Alle TODOS\n    field :todos, [Types::TodoType], null: false\n\n    def todos\n      Todo.all\n    end\n\n    # Einzelnes TODO\n    field :todo, Types::TodoType, null: true do\n      argument :id, ID, required: true\n    end\n\n    def todo(id:)\n      Todo.find_by(id: id)\n    end\n  end\nend\n" >> app/graphql/types/query_type.rb \
-  # app/graphql/types/mutation_type.rb
-#module Types
-#  class MutationType < Types::BaseObject
-#
-#    # TODO anlegen
-#    field :create_todo, Types::TodoType, null: false do
-#      argument :title, String, required: true
-#    end
-#
-#    def create_todo(title:)
-#      Todo.create!(title: title, completed: false)
-#    end
-#
-#    # TODO aktualisieren
-#    field :update_todo, Types::TodoType, null: false do
-#      argument :id, ID, required: true
-#      argument :title, String, required: false
-#      argument :completed, Boolean, required: false
-#    end
-#
-#    def update_todo(id:, title: nil, completed: nil)
-#      todo = Todo.find(id)
-#      todo.update!(title: title, completed: completed)
-#      todo
-#    end
-#
-#    # TODO löschen
-#    field :delete_todo, Boolean, null: false do
-#      argument :id, ID, required: true
-#    end
-#
-#    def delete_todo(id:)
-#      todo = Todo.find(id)
-#      todo.destroy
-#      true
-#    end
-#  end
-#end
   && bundle exec rails generate graphql:mutation Todo \
-  && sed -i 's/Mutations::Todo/Mutations::Todo\n\n    field :create_todo, Types::TodoType, null: false do\n      argument :title, String, required: true\n    end\n\n    def create_todo(title:)\n      Todo.create!(title: title, completed: false)\n    end\n/g' app/graphql/types/mutation_type.rb \
+  && sed -i 's/Mutations::Todo/Mutations::Todo\n\n    field :create_todo, Types::TodoType, null: false do\n      argument :title, String, required: true\n    end\n\n    def create_todo(title:)\n      Todo.create!(title: title, completed: false)\n    end\n\n    field :update_todo, Types::TodoType, null: false do\n\n      argument :id, ID, required: true\n      argument :title, String, required: false\n      argument :completed, Boolean, required: false\n    end\n\n    def update_todo(id:, title: nil, completed: nil)\n      todo = Todo.find(id)\n      todo.update!(title: title, completed: completed)\n      todo\n    end\n\n    field :delete_todo, Boolean, null: false do\n      argument :id, ID, required: true\n    end\n\n    def delete_todo(id:)\n      todo = Todo.find(id)\n      todo.destroy\n      true\n    end\n/g' app/graphql/types/mutation_type.rb \
   #&& bundle exec rails generate graphql:mutation_create Todo \
   #&& bundle exec rails generate graphql:mutation_update Todo \
   #&& bundle exec rails generate graphql:mutation_delete Todo \
