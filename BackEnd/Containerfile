@@ -51,7 +51,7 @@ RUN bundle init \
 #    field :completed, Boolean, null: false
 #  end
 #end
-  && bundle exec rails generate graphql:object TodoType title:String completed:Boolean \
+  && bundle exec rails generate graphql:object TodoType id:ID title:String completed:Boolean \
   # app/graphql/types/query_type.rb
 #module Types
 #  class QueryType < Types::BaseObject
