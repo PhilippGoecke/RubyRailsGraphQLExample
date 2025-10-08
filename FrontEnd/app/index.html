@@ -7,12 +7,12 @@
   <body>
     <h1>Todo List</h1>
     <div>
+      <input type="text" id="new-todo" placeholder="Neues Todo" />
       <script>
         document.getElementById('new-todo').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') addTodo();
+          if (e.key === 'Enter') addTodo();
         });
       </script>
-      <input type="text" id="new-todo" placeholder="Neues Todo" />
       <button onclick="addTodo()">Hinzufügen</button>
     </div>
     <ul id="todo-list"></ul>
