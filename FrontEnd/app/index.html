@@ -1,113 +1,117 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <title>Todo List mit GraphQL</title>
-</head>
-<body>
-  <h1>Todo List</h1>
-  <div>
-    <input type="text" id="new-todo" placeholder="Neues Todo" />
-    <button onclick="addTodo()">Hinzufügen</button>
-  </div>
-  <ul id="todo-list"></ul>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Todo List mit GraphQL</title>
+  </head>
+  <body>
+    <h1>Todo List</h1>
+    <div>
+      <script>
+        document.getElementById('new-todo').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') addTodo();
+        });
+      </script>
+      <input type="text" id="new-todo" placeholder="Neues Todo" />
+      <button onclick="addTodo()">Hinzufügen</button>
+    </div>
+    <ul id="todo-list"></ul>
 
-  <script>
-    const apiUrl = '/graphql';
+    <script>
+      const apiUrl = '/graphql';
 
-    // Funktion, um Todos abzurufen
-    async function fetchTodos() {
-      const query = `
-        {
-          todos {
-            id
-            title
-            completed
+      // Function to fetch todos
+      async function fetchTodos() {
+        const query = `
+          {
+            todos {
+              id
+              title
+              completed
+            }
           }
-        }
-      `;
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
-      });
-      const result = await response.json();
-      return result.data.todos;
-    }
-
-    // Funktion, um Todos anzuzeigen
-    async function showTodos() {
-      const todos = await fetchTodos();
-      const list = document.getElementById('todo-list');
-      list.innerHTML = '';
-      todos.forEach(todo => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleComplete(${todo.id}, this.checked)" />
-          ${todo.title}
-          <button onclick="deleteTodo(${todo.id})">Löschen</button>
         `;
-        list.appendChild(li);
-      });
-    }
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        const result = await response.json();
+        return result.data.todos;
+      }
+      // Function to display todos
+      async function showTodos() {
+        const todos = await fetchTodos();
+        const list = document.getElementById('todo-list');
+        list.innerHTML = '';
+        todos.forEach(todo => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleComplete(${todo.id}, this.checked)" />
+            ${todo.title}
+            <button onclick="deleteTodo(${todo.id})">Löschen</button>
+          `;
+          list.appendChild(li);
+        });
+      }
 
-    // Todo hinzufügen
-    async function addTodo() {
-      const titleInput = document.getElementById('new-todo');
-      const title = titleInput.value;
-      if (!title) return;
-      const mutation = `
-        mutation {
-          createTodo(title: "${title}") {
-            id
-            title
+      // Add todo
+      async function addTodo() {
+        const titleInput = document.getElementById('new-todo');
+        const title = titleInput.value;
+        if (!title) return;
+        const mutation = `
+          mutation {
+            createTodo(title: "${title}") {
+              id
+              title
+            }
           }
-        }
-      `;
-      await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: mutation })
-      });
-      titleInput.value = '';
-      showTodos();
-    }
+        `;
+        await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: mutation })
+        });
+        titleInput.value = '';
+        showTodos();
+      }
 
-    // Todo löschen
-    async function deleteTodo(id) {
-      const mutation = `
-        mutation {
-          deleteTodo(id: ${id})
-        }
-      `;
-      await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: mutation })
-      });
-      showTodos();
-    }
-
-    // Todo Status umschalten
-    async function toggleComplete(id, completed) {
-      const mutation = `
-        mutation {
-          updateTodo(id: ${id}, completed: ${completed}) {
-            id
-            completed
+      // Delete todo
+      async function deleteTodo(id) {
+        const mutation = `
+          mutation {
+            deleteTodo(id: ${id})
           }
-        }
-      `;
-      await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: mutation })
-      });
-      showTodos();
-    }
+        `;
+        await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: mutation })
+        });
+        showTodos();
+      }
 
-    // Erste Anzeige beim Laden
-    showTodos();
-  </script>
-</body>
+      // Toggle todo status
+      async function toggleComplete(id, completed) {
+        const mutation = `
+          mutation {
+            updateTodo(id: ${id}, completed: ${completed}) {
+              id
+              completed
+            }
+          }
+        `;
+        await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: mutation })
+        });
+        showTodos();
+      }
+
+      // Initial render on load
+      showTodos();
+    </script>
+  </body>
 </html>
