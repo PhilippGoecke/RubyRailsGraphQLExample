@@ -112,7 +112,7 @@ RUN bundle init \
 #  end
 #end
   && bundle exec rails generate graphql:mutation Todo \
-  && sed -i 's/Mutations::Todo/Mutations::Todo\n\n    field :create_todo, Types::TodoType, null: false do\n      argument :title, String, required: true\n    end\n\ndef create_todo(title:)\n      Todo.create!(title: title, completed: false)\n    end/g' app/graphql/types/mutation_type.rb \
+  && sed -i 's/Mutations::Todo/Mutations::Todo\n\n    field :create_todo, Types::TodoType, null: false do\n      argument :title, String, required: true\n    end\n\n    def create_todo(title:)\n      Todo.create!(title: title, completed: false)\n    end/g' app/graphql/types/mutation_type.rb \
   #&& bundle exec rails generate graphql:mutation_create Todo \
   #&& bundle exec rails generate graphql:mutation_update Todo \
   #&& bundle exec rails generate graphql:mutation_delete Todo \
