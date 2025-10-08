@@ -144,6 +144,8 @@ COPY --from=install /rails/demo /rails/demo
 
 WORKDIR /rails/demo
 
+ENV RAILS_ENV=production
+
 EXPOSE 3000
 
 HEALTHCHECK --interval=35s --timeout=4s CMD curl -f http://localhost:3000/up || exit 1
