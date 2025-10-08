@@ -115,7 +115,7 @@ RUN bundle init \
   #&& bundle exec rails generate graphql:mutation_create Todo \
   #&& bundle exec rails generate graphql:mutation_update Todo \
   #&& bundle exec rails generate graphql:mutation_delete Todo \
-  && echo -ne "class TodoSchema < GraphQl::Schema\n  query(Types::QueryType)\n  mutation(Types::MutationType)\nend\n" > app/graphql/schema.rb \
+  && echo -ne "class TodoSchema < GraphQL::Schema\n  query(Types::QueryType)\n  mutation(Types::MutationType)\nend\n" > app/graphql/todo_schema.rb \
   && sed -i 's/result = DemoSchema.execute/result = TodoSchema.execute/g' app/controllers/graphql_controller.rb \
   && RAILS_ENV=production bundle exec rails db:migrate \
   && sed -i 's/# root/mount GraphiQL::Rails::Engine, at: "\/graphiql", graphql_path: "\/graphql"\n  # root/g' config/routes.rb
