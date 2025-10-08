@@ -58,7 +58,7 @@
       if (!title) return;
       const mutation = `
         mutation {
-          createTodo(input: {title: "${title}"}) {
+          createTodo(title: "${title}") {
             id
             title
           }
