@@ -9,7 +9,7 @@ services:
       target: rails
     # Expose Rails default port
     ports:
-      - "3000:3000"
+      - "3333:3000"
     environment:
       RAILS_ENV: production
       # Uncomment if you want Rails logs to STDOUT (if not already configured)
@@ -21,8 +21,8 @@ services:
       retries: 3
       start_period: 25s
     # Persist the sqlite DB (optional)
-    volumes:
-      - rails-db:/rails/demo/db
+    # volumes:
+    #  - rails-db:/rails/demo/db
     restart: unless-stopped
 
   frontend:
