@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  backend:
+    container_name: rails-backend
+    build:
+      context: ./BackEnd
+      dockerfile: Containerfile
+      target: rails
+    # Expose Rails default port
+    ports:
+      - "3000:3000"
+    environment:
+      RAILS_ENV: production
+      # Uncomment if you want Rails logs to STDOUT (if not already configured)
+      # RAILS_LOG_TO_STDOUT: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 35s
+      timeout: 4s
+      retries: 3
+      start_period: 25s
+    # Persist the sqlite DB (optional)
+    volumes:
+      - rails-db:/rails/demo/db
+    restart: unless-stopped
+
+  frontend:
+    container_name: nginx-frontend
+    build:
+      context: ./FrontEnd
+      dockerfile: Containerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8080:80"    # HTTP
+      - "8443:443"   # HTTPS / self‑signed cert
+    restart: unless-stopped
+    # If you update nginx.conf to point to http://backend:3000 you won't need host.containers.internal
+    # You can mount a local dev copy of the static assets if desired:
+    # volumes:
+    #   - ./FrontEnd/app/:/var/www/html:ro
+
+volumes:
+  rails-db:
+    driver: local
+
+# Notes:
+# 1. The current nginx.conf proxies /graphql to host.containers.internal:3333. Inside the compose
+#    network you can instead set `proxy_pass http://backend:3000/graphql;` to reach Rails directly.
+# 2. Access the app:
+#      Rails API / GraphQL endpoint: https://localhost:8443/graphql (after adjusting nginx proxy) or http://localhost:3000/graphql directly.
+#      Frontend static site: https://localhost:8443/ (or http://localhost:8080/ which will redirect to HTTPS).
