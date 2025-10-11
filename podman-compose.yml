@@ -15,7 +15,7 @@ services:
       # Uncomment if you want Rails logs to STDOUT (if not already configured)
       # RAILS_LOG_TO_STDOUT: "true"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:3000/up"]
+      test: ["CMD", "curl", "-sSL", "--write-out ',http result [%{response_code}];'", "--fail", "http://localhost:3000/up"]
       interval: 35s
       timeout: 4s
       retries: 3
