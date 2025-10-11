@@ -15,7 +15,7 @@ services:
       # Uncomment if you want Rails logs to STDOUT (if not already configured)
       # RAILS_LOG_TO_STDOUT: "true"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      test: ["CMD", "curl", "-f", "http://localhost:3333/up"]
       interval: 35s
       timeout: 4s
       retries: 3
@@ -36,6 +36,12 @@ services:
     ports:
       - "8080:80"    # HTTP
       - "8443:443"   # HTTPS / self‑signed cert
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8443/health"]
+      interval: 35s
+      timeout: 4s
+      retries: 3
+      start_period: 25s
     restart: unless-stopped
     # If you update nginx.conf to point to http://backend:3000 you won't need host.containers.internal
     # You can mount a local dev copy of the static assets if desired:
