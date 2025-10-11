@@ -113,6 +113,6 @@ ENV RAILS_ENV=production
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=35s --timeout=4s CMD curl -f http://localhost:3000/up || exit 1
+HEALTHCHECK --interval=35s --timeout=4s CMD curl --fail http://localhost:3000/up || exit 1
 
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]
