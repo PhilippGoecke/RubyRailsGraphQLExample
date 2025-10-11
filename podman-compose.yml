@@ -50,5 +50,5 @@ volumes:
 # 1. The current nginx.conf proxies /graphql to host.containers.internal:3333. Inside the compose
 #    network you can instead set `proxy_pass http://backend:3000/graphql;` to reach Rails directly.
 # 2. Access the app:
-#      Rails API / GraphQL endpoint: https://localhost:8443/graphql (after adjusting nginx proxy) or http://localhost:3000/graphql directly.
+#      Rails API / GraphQL endpoint: https://localhost:8443/graphql (after adjusting nginx proxy) or http://localhost:3333/graphql directly.
 #      Frontend static site: https://localhost:8443/ (or http://localhost:8080/ which will redirect to HTTPS).
