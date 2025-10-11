@@ -37,7 +37,7 @@ services:
       - "8080:80"    # HTTP
       - "8443:443"   # HTTPS / self‑signed cert
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8443/health"]
+      test: ["CMD", "curl", "--insecure", "-f", "http://localhost:8443/health"]
       interval: 35s
       timeout: 4s
       retries: 3
